@@ -84,7 +84,7 @@ This repository contains Infrastructure-as-Code (IaC) for deploying and managing
 
 6. **Log groups**
     The below logs groups are created for CTRs, Agent Events and Contact Events respectively.  These logs can be used to build real-time and historical dashboards.  
-
+    ```bash
     /aws/lambda/<instance-name>-ctr
     /aws/lambda/<instance-name>-ae
     /aws/lambda/<instance-name>-ce
