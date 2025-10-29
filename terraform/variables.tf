@@ -9,3 +9,7 @@ variable "instance_alias" {
   default = "connect-setup"
 }
 
+variable "log_retention" {
+  type    = number
+  default = 30
+}

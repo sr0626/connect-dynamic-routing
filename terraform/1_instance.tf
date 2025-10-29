@@ -1,6 +1,11 @@
 locals {
   ctr-stream = "${var.instance_alias}-ctr-stream"
   ae-stream  = "${var.instance_alias}-ae-stream"
+
+  kinesis_stream_arns = {
+    ctr   = aws_kinesis_stream.ctr.arn
+    agent = aws_kinesis_stream.agent.arn
+  }
 }
 
 resource "aws_connect_instance" "test" {
@@ -16,13 +21,13 @@ resource "time_sleep" "after_instance" {
   create_duration = "45s"
 }
 
-resource "aws_iam_service_linked_role" "connect" {
-  aws_service_name = "connect.amazonaws.com"
-}
+# resource "aws_iam_service_linked_role" "connect" {
+#   aws_service_name = "connect.amazonaws.com"
+# }
 
 data "aws_iam_role" "connect_slr" {
-  name       = "AWSServiceRoleForAmazonConnect"
-  depends_on = [aws_iam_service_linked_role.connect]
+  name = "AWSServiceRoleForAmazonConnect"
+  #depends_on = [aws_iam_service_linked_role.connect]
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
@@ -56,7 +61,7 @@ resource "aws_s3_bucket_policy" "connect_artifacts" {
 }
 
 resource "aws_connect_instance_storage_config" "chat_store" {
-  depends_on    = [aws_iam_service_linked_role.connect]
+  #depends_on    = [aws_iam_service_linked_role.connect]
   instance_id   = aws_connect_instance.test.id
   resource_type = "CHAT_TRANSCRIPTS"
 
@@ -76,7 +81,8 @@ resource "aws_connect_instance_storage_config" "chat_store" {
 }
 
 resource "aws_connect_instance_storage_config" "call_store" {
-  depends_on    = [aws_iam_service_linked_role.connect, aws_s3_bucket_policy.connect_artifacts]
+  #depends_on    = [aws_iam_service_linked_role.connect, aws_s3_bucket_policy.connect_artifacts]
+  depends_on    = [aws_s3_bucket_policy.connect_artifacts]
   instance_id   = aws_connect_instance.test.id
   resource_type = "CALL_RECORDINGS"
 
@@ -96,7 +102,7 @@ resource "aws_connect_instance_storage_config" "call_store" {
 }
 
 resource "aws_connect_instance_storage_config" "report_store" {
-  depends_on    = [aws_iam_service_linked_role.connect, aws_s3_bucket_policy.connect_artifacts]
+  #depends_on    = [aws_iam_service_linked_role.connect, aws_s3_bucket_policy.connect_artifacts]
   instance_id   = aws_connect_instance.test.id
   resource_type = "SCHEDULED_REPORTS"
 
@@ -115,79 +121,71 @@ resource "aws_connect_instance_storage_config" "report_store" {
   }
 }
 
+#Kinesis Data Streams for CTR  (can be stream or firehose)
+resource "aws_kinesis_stream" "ctr" {
+  name             = local.ctr-stream
+  shard_count      = 1
+  retention_period = 24
+  stream_mode_details {
+    stream_mode = "PROVISIONED"
+  }
+}
 
-# Kinesis Data Streams for CTR  (can be stream or firehose)
-# resource "aws_kinesis_stream" "ctr" {
-#   name             = local.ctr-stream
-#   shard_count      = 1
-#   retention_period = 24
-#   stream_mode_details {
-#     stream_mode = "PROVISIONED"
-#   }
-# }
+# TODO Agent Events  - ONLY stream (no firehose support)
+resource "aws_kinesis_stream" "agent" {
+  name             = local.ae-stream
+  shard_count      = 1
+  retention_period = 24
+  stream_mode_details {
+    stream_mode = "PROVISIONED"
+  }
+}
 
-# # TODO Agent Events  - ONLY stream (no firehose support)
-# resource "aws_kinesis_stream" "agent" {
-#   name             = local.ae-stream
-#   shard_count      = 1
-#   retention_period = 24
-#   stream_mode_details {
-#     stream_mode = "PROVISIONED"
-#   }
-# }
+resource "aws_kinesis_resource_policy" "connect_stream_policy" {
+  for_each     = local.kinesis_stream_arns
+  resource_arn = each.value
 
-# locals {
-#   kinesis_stream_arns = {
-#     ctr   = aws_kinesis_stream.ctr.arn
-#     agent = aws_kinesis_stream.agent.arn
-#   }
-# }
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowConnectPutRecords"
+        Effect    = "Allow"
+        Principal = { AWS = data.aws_iam_role.connect_slr.arn }
+        Action = [
+          "kinesis:PutRecord",
+          "kinesis:PutRecords",
+          "kinesis:DescribeStream",
+          "kinesis:DescribeStreamSummary"
+        ]
+        Resource = each.value
+      }
+    ]
+  })
+}
 
-# resource "aws_kinesis_resource_policy" "connect_stream_policy" {
-#   for_each     = local.kinesis_stream_arns
-#   resource_arn = each.value
+resource "aws_connect_instance_storage_config" "stream_ctr" {
+  #depends_on    = [aws_kinesis_resource_policy.connect_stream_policy]
+  instance_id   = aws_connect_instance.test.id
+  resource_type = "CONTACT_TRACE_RECORDS"
 
-#   policy = jsonencode({
-#     Version   = "2012-10-17"
-#     Statement = [
-#       {
-#         Sid       = "AllowConnectPutRecords"
-#         Effect    = "Allow"
-#         Principal = { AWS = data.aws_iam_role.connect_slr.arn }
-#         Action    = [
-#           "kinesis:PutRecord",
-#           "kinesis:PutRecords",
-#           "kinesis:DescribeStream",
-#           "kinesis:DescribeStreamSummary"
-#         ]
-#         Resource  = each.value
-#       }
-#     ]
-#   })
-# }
+  storage_config {
+    storage_type = "KINESIS_STREAM"
+    kinesis_stream_config {
+      stream_arn = aws_kinesis_stream.ctr.arn
+    }
+  }
+}
 
-# resource "aws_connect_instance_storage_config" "stream_ctr" {
-#   depends_on    = [aws_kinesis_resource_policy.connect_stream_policy]
-#   instance_id   = aws_connect_instance.test.id
-#   resource_type = "CONTACT_TRACE_RECORDS"
+resource "aws_connect_instance_storage_config" "stream_agent_events" {
+  #depends_on    = [aws_kinesis_resource_policy.connect_stream_policy]
+  instance_id   = aws_connect_instance.test.id
+  resource_type = "AGENT_EVENTS"
 
-#   storage_config {
-#     storage_type = "KINESIS_STREAM"
-#     kinesis_stream_config {
-#       stream_arn = aws_kinesis_stream.ctr.arn
-#     }
-#   }
-# }
-
-# resource "aws_connect_instance_storage_config" "stream_agent_events" {
-#   depends_on    = [aws_kinesis_resource_policy.connect_stream_policy]
-#   instance_id   = aws_connect_instance.test.id
-#   resource_type = "AGENT_EVENTS"
-
-#   storage_config {
-#     storage_type = "KINESIS_STREAM"
-#     kinesis_stream_config {
-#       stream_arn = aws_kinesis_stream.agent.arn
-#     }
-#   }
-# }
+  storage_config {
+    storage_type = "KINESIS_STREAM"
+    kinesis_stream_config {
+      stream_arn = aws_kinesis_stream.agent.arn
+    }
+  }
+}

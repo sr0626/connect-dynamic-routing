@@ -1,6 +1,6 @@
 # ☁️ Amazon Connect Infrastructure Setup
 
-This repository contains Infrastructure-as-Code (IaC) for deploying and managing an **Amazon Connect** instance and its related AWS resources using **Terraform**.
+This repository contains Infrastructure-as-Code (IaC) for deploying and managing an **Amazon Connect** instance and its related AWS resources using **Terraform**.  This is build on top of connect-setup project to add event logging (CTR, Agent Events and Contact Events) to cloud watch log groups using Kinesis streams, Event Bridge and Lamba(python) functions.
 
 ---
 
@@ -21,11 +21,15 @@ This repository contains Infrastructure-as-Code (IaC) for deploying and managing
     │ ├── data.tf # Terraform data load
     │ ├── kms.tf # Terraform kms
     │ ├── provider.tf # Terraform provider setup
+    │ ├── lambda.tf # Terraform lambda setup
+    │ ├── log-groups.tf # Terraform CW log groups setup
     ├── json/ # Contact flows (exported as json), prompts, etc.
     │ ├── contact_flows/
     │ ├── prompts/
+    ├── lambda/ #Lambda functions for logging events in Cloudwatch log groups
+    | |-- ce_handler.py # logs contact events 
+    | |-- kds_handler.py # logs ctr and agent events 
     └── README.md
-
 
 ---
 
@@ -77,3 +81,10 @@ This repository contains Infrastructure-as-Code (IaC) for deploying and managing
     9. Select Close Contact
     10. Check your s3 bucket for call recordings
     11. Check CW logs group for the call trace
+
+6. **Log groups**
+    The below logs groups are created for CTRs, Agent Events and Contact Events respectively.  These logs can be used to build real-time and historical dashboards.  
+    
+    /aws/lambda/<instance-name>-ctr
+    /aws/lambda/<instance-name>-ae
+    /aws/lambda/<instance-name>-ce
