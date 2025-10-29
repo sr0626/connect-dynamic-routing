@@ -1,6 +1,8 @@
-# ☁️ Amazon Connect Infrastructure Setup
+# ☁️ Amazon Connect Infrastructure Setup with Metrics
 
-This repository contains Infrastructure-as-Code (IaC) for deploying and managing an **Amazon Connect** instance and its related AWS resources using **Terraform**.  This is build on top of connect-setup project to add event logging (CTR, Agent Events and Contact Events) to cloud watch log groups using Kinesis streams, Event Bridge and Lamba(python) functions.
+This repository contains Infrastructure-as-Code (IaC) for deploying and managing an **Amazon Connect** instance and its related AWS resources using **Terraform**.  
+
+This is build on top of connect-setup project to add **event logging (CTR, Agent Events and Contact Events)** to cloud watch log groups using Kinesis streams, Event Bridge and Lamba(python) functions.
 
 ---
 
