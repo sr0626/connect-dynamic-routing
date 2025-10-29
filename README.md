@@ -7,7 +7,7 @@ This is build on top of connect-setup project to add **event logging (CTR, Agent
 ---
 
 ## 📁 Project Structure
-    connect-setup/
+    connect-metrics/
     ├── terraform/ # All Terraform IaC code
     │ ├── 1_instance.tf # Instance configuration
     │ ├── 1a_phone_number.tf # Phone number provisioning
@@ -48,8 +48,8 @@ This is build on top of connect-setup project to add **event logging (CTR, Agent
 
 1. **Clone the repository**
    ```bash
-   git clone https://gitlab.com/sr0626/connect-setup.git
-   cd connect-setup/terraform
+   git clone https://gitlab.com/sr0626/connect-metrics.git
+   cd connect-metrics/terraform
 
 2. **Comment some code**
     1. Comment all the code in 1a_phone_number.tf file
