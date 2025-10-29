@@ -23,12 +23,12 @@ This repository contains Infrastructure-as-Code (IaC) for deploying and managing
     │ ├── provider.tf # Terraform provider setup
     │ ├── lambda.tf # Terraform lambda setup
     │ ├── log-groups.tf # Terraform CW log groups setup
+    ├ |── lambda/ #Lambda functions for logging events in Cloudwatch log groups
+    |   |-- ce_handler.py # logs contact events 
+    |   |-- kds_handler.py # logs ctr and agent events 
     ├── json/ # Contact flows (exported as json), prompts, etc.
     │ ├── contact_flows/
     │ ├── prompts/
-    ├── lambda/ #Lambda functions for logging events in Cloudwatch log groups
-    | |-- ce_handler.py # logs contact events 
-    | |-- kds_handler.py # logs ctr and agent events 
     └── README.md
 
 ---
@@ -84,7 +84,7 @@ This repository contains Infrastructure-as-Code (IaC) for deploying and managing
 
 6. **Log groups**
     The below logs groups are created for CTRs, Agent Events and Contact Events respectively.  These logs can be used to build real-time and historical dashboards.  
-    
+
     /aws/lambda/<instance-name>-ctr
     /aws/lambda/<instance-name>-ae
     /aws/lambda/<instance-name>-ce

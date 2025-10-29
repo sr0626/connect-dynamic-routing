@@ -6,7 +6,7 @@
 # }
 
 variable "instance_alias" {
-  default = "connect-setup"
+  default = "connect-metrics"
 }
 
 variable "log_retention" {
