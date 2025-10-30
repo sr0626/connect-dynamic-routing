@@ -1,4 +1,4 @@
-# ☁️ Amazon Connect Infrastructure Setup with Metrics
+# ☁️ Amazon Connect Infrastructure Setup with Metrics and Dynamic Routing using Lambda function.
 
 This repository contains Infrastructure-as-Code (IaC) for deploying and managing an **Amazon Connect** instance and its related AWS resources using **Terraform**.  
 
