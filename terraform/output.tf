@@ -33,3 +33,7 @@ output "queue_id" {
 output "my_queue_arn" {
   value = aws_connect_queue.test.arn
 }
+
+output "router_lambda_arn" {
+  value = aws_lambda_function.dynamic_router.arn
+}

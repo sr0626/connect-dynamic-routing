@@ -1,10 +1,10 @@
 resource "aws_connect_contact_flow" "test" {
   instance_id  = aws_connect_instance.test.id
-  name         = "My Inbound Flow"
-  description  = "My Inbound Contact Flow"
+  name         = "My Dynamic Routing Flow"
+  description  = "My Dynamic Routing Flow"
   type         = "CONTACT_FLOW"
-  content      = file("${path.module}/../json/contact_flows/MyInboundFlow.json")
-  content_hash = filebase64sha256("${path.module}/../json/contact_flows/MyInboundFlow.json")
+  content      = file("${path.module}/../json/contact_flows/MyDynamicRoutingFlow.json")
+  content_hash = filebase64sha256("${path.module}/../json/contact_flows/MyDynamicRoutingFlow.json")
 }
 
 

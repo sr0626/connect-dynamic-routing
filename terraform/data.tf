@@ -1,4 +1,5 @@
 data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 # --- Look up built-in "Admin" Security Profile ---
 data "aws_connect_security_profile" "admin" {

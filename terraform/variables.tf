@@ -6,10 +6,10 @@
 # }
 
 variable "instance_alias" {
-  default = "connect-metrics"
+  default = "connect-dynamic-routing"
 }
 
 variable "log_retention" {
   type    = number
-  default = 30
+  default = 1
 }
