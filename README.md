@@ -28,6 +28,7 @@ This is build on top of connect-setup project to add **event logging (CTR, Agent
     ├ |── lambda/ #Lambda functions for logging events in Cloudwatch log groups
     |   |-- ce_handler.py # logs contact events 
     |   |-- kds_handler.py # logs ctr and agent events 
+    |   |-- dynamic_router.py # return queue arn and queue name based on the caller selection
     ├── json/ # Contact flows (exported as json), prompts, etc.
     │ ├── contact_flows/
     │ ├── prompts/
