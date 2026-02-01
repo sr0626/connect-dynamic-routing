@@ -91,3 +91,29 @@ This is build on top of connect-setup project to add **event logging (CTR, Agent
     /aws/lambda/<instance-name>-ctr
     /aws/lambda/<instance-name>-ae
     /aws/lambda/<instance-name>-ce
+
+7. **Connect Replication**
+    Run the below commnads to setup Amazon Connect Global Resiliency  (ACGR).  This assumes your instance is already allow listed for resiliancy.  If not, please contact AWS support first.
+
+    1. aws connect replicate-instance --instance-id INSTANCE_ID --replicate-region us-east-1 --replica-alias connect-gr-east-test
+    2. aws connect create-traffic-distribution-group --name Prod --instance-id INSTANCE_ID
+    3. aws connect describe-traffic-distribution-group --traffic-distribution-group-id TDG_ID  (wait for status ACTIVE)
+    4. aws connect get-traffic-distribution --id TDG_ID (to see current traffic distribution)
+    5a. aws connect update-phone-number --phone-number-id PHONE_ID --target-arn TDG_ARN (assign phone number to TDG from Instance)
+    5b. aws connect search-available-phone-numbers --target-arn TDG_ARN --phone-number-country-code US --phone-number-type DID --max-results 5 (to search a new phone number those can be claimed for the TDG)
+    6. aws connect claim-phone-number --target-arn TDG_ARN --phone-number PHONE_NUMBER 
+    7. aws connect update-traffic-distribution --id TDG_ID --cli-input-json '{"TelephonyConfig" : {"Distributions": [{"Percentage": 100, "Region": "us-east-1"}, {"Percentage": 0, "Region": "us-west-2"}] }}'  (to move 100% traffic from west to east, the replica region)
+    8. 
+
+    TODO: 
+    1. agent distribution 
+    2. ALGR for Lex resiliency
+
+    Helpful links:
+    https://docs.aws.amazon.com/connect/latest/adminguide/connect-global-resiliency-requirements.html
+    https://docs.aws.amazon.com/connect/latest/adminguide/get-started-connect-global-resiliency.html#howto-setup-gr
+    https://catalog.workshops.aws/amazon-connect-global-resiliency/en-US
+    https://catalog.workshops.aws/amazon-connect-global-resiliency/en-US/connectbestpractices
+    https://catalog.workshops.aws/amazon-connect-global-resiliency/en-US/awsservicesbestpractices
+
+    
